@@ -4,6 +4,7 @@ import cats.{Align, Alternative, Applicative, CoflatMap, Eval, Foldable, Functor
 import indigo.Outcome.sequence
 import indigo.*
 import indigo.shared.events.MouseButton
+import indigo.syntax.*
 import indigoextras.subsystems.FPSCounter
 import indigoextras.ui.{Button, ButtonAssets}
 import org.jponte.GlobalEvents.*
@@ -262,12 +263,12 @@ object Game extends IndigoDemo[Unit, WebSocketConfig, GameState, UIState] {
       model: GameState,
       viewModel: UIState
   ): Outcome[SceneUpdateFragment] = {
-    val units = model.units.toList.flatMap {
+    val units: Batch[SceneNode] = model.units.toList.flatMap {
       case (position, deployment) =>
         TileAssets.drawDeployment(position, deployment)
-    }
+    }.toBatch
 
-    def hoverCursor(hoverTile: Option[Position]) = hoverTile.flatMap {
+    def hoverCursor(hoverTile: Option[Position]): Batch[SceneNode] = hoverTile.flatMap {
       case p @ Position(x, y) =>
         if (model.tileMap.map.contains(p))
           Some(
@@ -279,9 +280,9 @@ object Game extends IndigoDemo[Unit, WebSocketConfig, GameState, UIState] {
           )
         else
           None
-    }.toList
+    }.toBatch
 
-    def selectedUnitRange(tiles: Set[Position]) =
+    def selectedUnitRange(tiles: Set[Position]): Batch[SceneNode] =
       tiles.map {
         case Position(x, y) =>
           Shape
@@ -291,10 +292,10 @@ object Game extends IndigoDemo[Unit, WebSocketConfig, GameState, UIState] {
               Stroke(1, RGBA.SteelBlue)
             )
             .withDepth(Depth(2))
-      }
+      }.toBatch
 
-    def pathLines(path: Seq[Position]) =
-      if (path.size > 1) {
+    def pathLines(path: Seq[Position]): Batch[SceneNode] =
+      (if (path.size > 1) {
         val pointPath = path.map {
           case Position(x, y) =>
             Point(x * 16 + 6, y * 16 + 6)
@@ -305,9 +306,9 @@ object Game extends IndigoDemo[Unit, WebSocketConfig, GameState, UIState] {
         }
       } else {
         List()
-      }
+      }).toBatch
 
-    def rangeCheck(checkInfo: Option[Position]) =
+    def rangeCheck(checkInfo: Option[Position]): Batch[SceneNode] =
       checkInfo.flatMap(p => model.units.get(p).map(p -> _)).toList.flatMap {
         case (position, deployment) =>
           val movableTiles =
@@ -333,9 +334,9 @@ object Game extends IndigoDemo[Unit, WebSocketConfig, GameState, UIState] {
                 )
                 .withDepth(Depth(2))
           }
-      }
+      }.toBatch
 
-    def targetsSquares(targets: Set[Position]) = targets.map {
+    def targetsSquares(targets: Set[Position]): Batch[SceneNode] = targets.map {
       case Position(x, y) =>
         Shape
           .Box(
@@ -344,25 +345,25 @@ object Game extends IndigoDemo[Unit, WebSocketConfig, GameState, UIState] {
             Stroke(1, RGBA.Red)
           )
           .withDepth(Depth(2))
-    }
+    }.toBatch
 
     viewModel match {
       case OverviewState(hoverTile, endTurnButton, checkRange) =>
-        val allElements = TileAssets.drawMap(model) ++ units ++ hoverCursor(
+        val allElements = TileAssets.drawMap(model).toBatch ++ units ++ hoverCursor(
           hoverTile
-        ) ++ rangeCheck(checkRange) ++ List(endTurnButton.draw) ++ UIAssets.playerInfoBox(
+        ) ++ rangeCheck(checkRange) ++ Batch(endTurnButton.draw) ++ UIAssets.playerInfoBox(
           model.players(model.currentPlayer),
           model.currentPlayer,
           hoverTile.exists(p => p.x < model.tileMap.width / 4 && p.y < model.tileMap.height / 4)
-        ) ++ UIAssets.tileInfoBox(
+        ).toBatch ++ UIAssets.tileInfoBox(
           hoverTile.flatMap(model.tileMap.tileAt),
           hoverTile.flatMap(model.units.get),
           hoverTile.flatMap(model.cities.get)
-        )
+        ).toBatch
         Outcome(SceneUpdateFragment(allElements))
       case UnitMoveState(hoverTile, selectedPosition, movableTiles, movingPath) =>
         val allElements =
-          TileAssets.drawMap(model) ++ pathLines(movingPath) ++ units ++ hoverCursor(
+          TileAssets.drawMap(model).toBatch ++ pathLines(movingPath) ++ units ++ hoverCursor(
             hoverTile
           ) ++ selectedUnitRange(
             movableTiles
@@ -370,23 +371,23 @@ object Game extends IndigoDemo[Unit, WebSocketConfig, GameState, UIState] {
         Outcome(SceneUpdateFragment(allElements))
       case UnitActionState(selectedUnit, movingPath, actionButtons, targets) =>
         val allElements =
-          TileAssets.drawMap(model) ++ pathLines(
+          TileAssets.drawMap(model).toBatch ++ pathLines(
             movingPath
-          ) ++ units ++ actionButtons.draw ++ TileAssets.drawDeployment(
+          ) ++ units ++ actionButtons.draw.toBatch ++ TileAssets.drawDeployment(
             movingPath.last,
             model.units(selectedUnit),
             true
-          )
+          ).toBatch
         Outcome(SceneUpdateFragment(allElements))
       case UnitAttackState(selectedUnit, hoverTile, movingPath, targets) =>
         val allElements =
-          TileAssets.drawMap(model) ++ pathLines(movingPath) ++ units ++ hoverCursor(
+          TileAssets.drawMap(model).toBatch ++ pathLines(movingPath) ++ units ++ hoverCursor(
             hoverTile
           ) ++ targetsSquares(targets) ++
-            TileAssets.drawDeployment(movingPath.last, model.units(selectedUnit), true)
+            TileAssets.drawDeployment(movingPath.last, model.units(selectedUnit), true).toBatch
         Outcome(SceneUpdateFragment(allElements))
       case PurchaseUnitActionState(selectedPosition, purchaseMenu) =>
-        val allElements = TileAssets.drawMap(model) ++ units ++ purchaseMenu.draw
+        val allElements = TileAssets.drawMap(model).toBatch ++ units ++ purchaseMenu.draw.toBatch
         Outcome(SceneUpdateFragment(allElements))
     }
   }

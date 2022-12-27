@@ -1,17 +1,20 @@
 import NativePackagerHelper._
 
 ThisBuild / version := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "3.1.1"
-ThisBuild / organization := "org.jopnte"
+ThisBuild / scalaVersion := "3.2.1"
+ThisBuild / organization := "org.jponte"
 ThisBuild / scalacOptions ++= Seq(
   "-Xmax-inlines",
   "64"
 )
 
-val circeVersion = "0.14.1"
+val circeVersion = "0.14.3"
 val monocleVersion = "3.1.0"
-val http4sVersion = "1.0.0-M32"
-val logbackVersion = "1.2.11"
+val http4sVersion = "1.0.0-M36"
+val logbackVersion = "1.4.5"
+val zioVersion = "2.0.5"
+val zioHttpVersion = "0.0.3"
+val shardCakeVersion = "2.0.5"
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -23,7 +26,14 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       "io.circe" %% "circe-generic" % circeVersion,
       "io.circe" %% "circe-parser" % circeVersion,
       "dev.optics" %% "monocle-core" % monocleVersion,
-      "dev.optics" %% "monocle-macro" % monocleVersion
+      "dev.optics" %% "monocle-macro" % monocleVersion,
+      "dev.zio" %% "zio" % zioVersion,
+      // "dev.zio" %% "zio-test" % zioVersion,
+      // "dev.zio" %% "zio-test-sbt" % zioVersion,
+      // "dev.zio" %% "zio-streams" % zioVersion,
+      // "dev.zio" %% "zio-test-junit" % zioVersion,
+      "dev.zio" %% "zio-http" % zioHttpVersion,
+      "com.devsisters" % "shardcake-core_3" % shardCakeVersion
     )
   )
 
@@ -38,9 +48,9 @@ lazy val game =
       windowStartWidth := 17 * 16 * 3,
       windowStartHeight := 12 * 16 * 3,
       libraryDependencies ++= Seq(
-        "io.indigoengine" %%% "indigo" % "0.12.1",
-        "io.indigoengine" %%% "indigo-extras" % "0.12.1",
-        "io.indigoengine" %%% "indigo-json-circe" % "0.12.1",
+        "io.indigoengine" %%% "indigo" % "0.14.0",
+        "io.indigoengine" %%% "indigo-extras" % "0.14.0",
+        "io.indigoengine" %%% "indigo-json-circe" % "0.14.0",
         "dev.optics" %%% "monocle-core" % monocleVersion,
         "dev.optics" %%% "monocle-macro" % monocleVersion
       )

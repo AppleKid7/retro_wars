@@ -1,0 +1,29 @@
+server should have:
+
+- matchmaking
+- anticheat
+- authentication? Would need google/aws oauth style
+- needs to subscribe to a session
+- coordination/synchronization process (lobby)
+  * probably use a zio hub for every game session. Could also run on one of the
+    shardcake shards.
+    this would allow to do broadcast messages from a client to every other client
+  * mechanism for consistency between the different instances that are participating
+- persisting state
+  * over the set of all events that have been received. Could be kafka or even a relational DB table.
+  * think about consistency. One choice:
+    > server determines the timestamp (could be a tick of a clock) for events. So the server knows the order of events
+      and they will always be processed in order.
+    > anticheat idea: send keystrokes and every client determines how those moves translate
+      to what's displayed on the screen
+    > trustless computing: every client sends only the keystrokes/mouse motion to the server.
+      basically a stateful fold over the input stream of events.
+    > optimization nice to have: if someone joins an ongoing session, the server could reconstruct
+      the current state of the gameworld by folding over the events and sending it to said client.
+    > clients compute state after the receive message from server
+
+start with:
+- matchmaking logic (could even be its own separate server from the session server)
+  this one assigns the user to a shard, and that's when it gets an ip address.
+  once all the players in a group are determined they're all connected via websocket
+  to the session server. This is where they exchange messages with each other (zhub)
