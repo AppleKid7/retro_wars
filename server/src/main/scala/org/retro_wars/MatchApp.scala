@@ -41,7 +41,7 @@ object MatchApp extends ZIOAppDefault {
   val app: Http[Scope & Sharding, Throwable, Request, Response] = Http.collectZIO[Request] {
     case Method.GET -> !! / "text" =>
       ZIO.unit.map(_ => Response.text("Hello World!"))
-    case Method.POST -> !! / "matches" =>
+    case Method.POST -> !! / "join" =>
       val result: ZIO[Sharding, Throwable, Either[MatchMakingError, Set[String]]] = for {
         matchShard <- Sharding.messenger(MatchBehavior.Match)
         res   <- matchShard.send[Either[MatchMakingError, Set[String]]](s"match1")(Join(s"user-${randomUUID()}", _))
@@ -54,6 +54,8 @@ object MatchApp extends ZIOAppDefault {
             Response.text(s"failure: ${ex.message}").setStatus(Status.BadRequest)
         }
       })
+    case Method.POST -> !! / "leave" =>
+      ??? // TODO
   }
 
   private val server =
