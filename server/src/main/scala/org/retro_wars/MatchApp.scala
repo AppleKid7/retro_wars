@@ -22,6 +22,7 @@ import org.retro_wars.MatchBehavior.MatchMessage.Join
 import com.devsisters.shardcake._
 import com.devsisters.shardcake.interfaces._
 import dev.profunktor.redis4cats.RedisCommands
+import org.retro_wars.config._
 
 
 object MatchApp extends ZIOAppDefault {
@@ -89,13 +90,15 @@ object MatchApp extends ZIOAppDefault {
         Scope.default,
         ZLayer.succeed(GrpcConfig.default),
         ZLayer.succeed(RedisConfig.default),
+        RedisUriConfig.live,
         redis,
         KryoSerialization.live,
         StorageRedis.live,
         ShardManagerClient.liveWithSttp,
         GrpcPods.live,
         Sharding.live,
-        GrpcShardingService.live
+        GrpcShardingService.live,
+        MatchConfig.live
       )
   }
 }
