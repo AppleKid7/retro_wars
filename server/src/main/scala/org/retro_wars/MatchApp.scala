@@ -15,11 +15,12 @@ import zhttp.service.server.ServerChannelFactory
 import zhttp.service.{EventLoopGroup, Server}
 import zio._
 import zio.config._
+import zio.json.*
 import zio.schema.Schema._
 import zio.schema._
 import zhttp.service.ChannelFactory
 import org.retro_wars.MatchBehavior._
-import org.retro_wars.MatchBehavior.MatchMessage.Join
+import org.retro_wars.MatchBehavior.MatchMessage.*
 import com.devsisters.shardcake._
 import com.devsisters.shardcake.interfaces._
 import dev.profunktor.redis4cats.RedisCommands
@@ -50,13 +51,37 @@ object MatchApp extends ZIOAppDefault {
       result.map(res => {
         res match {
           case Right(value) =>
-            Response.json(s"""{success: $value}""").setStatus(Status.Ok)
+            Response(data = HttpData.fromString(s"success: $value")).setStatus(Status.Ok)
+            Response.json(s"""{"success": "$value"}""").setStatus(Status.Ok)
           case Left(ex) =>
-            Response.json(s"""{failure: ${ex.message}}""").setStatus(Status.BadRequest)
+            Response.json(s"""{"failure": "${ex.message}"}""").setStatus(Status.BadRequest)
         }
       })
-    case req@(Method.POST -> !! / "leave") =>
-      ??? // TODO
+    case req @ (Method.POST -> !! / "leave") =>
+      for {
+        data <- req.bodyAsString.map(_.fromJson[UserLeave])
+        response <- data match {
+          case Left(e) =>
+            ZIO
+              .debug(s"Failed to parse the input: $e")
+              .as(Response.json(s"""{"failure": "$e"}""").setStatus(Status.BadRequest))
+          case Right(data) =>
+            val result = for {
+              matchShard <- Sharding.messenger(MatchBehavior.Match)
+              res <- matchShard.send[Either[MatchMakingError, String]](s"match1")(
+                Leave(s"user-${data.id}", _)
+              )
+            } yield res
+            result.map(res => {
+              res match {
+                case Right(value) =>
+                  Response.json(s"""{"success": "$value"}""").setStatus(Status.Ok)
+                case Left(ex) =>
+                  Response.json(s"""{"failure": "${ex.message}"}""").setStatus(Status.BadRequest)
+              }
+            })
+        }
+      } yield response
   }
 
   private val server =
