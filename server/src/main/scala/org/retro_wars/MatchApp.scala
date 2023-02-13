@@ -51,8 +51,8 @@ object MatchApp extends ZIOAppDefault {
       result.map(res => {
         res match {
           case Right(value) =>
-            Response(data = HttpData.fromString(s"success: $value")).setStatus(Status.Ok)
-            Response.json(s"""{"success": "$value"}""").setStatus(Status.Ok)
+            // Response(data = HttpData.fromString(s"success: $value")).setStatus(Status.Ok)
+            Response.json(s"""{"success": "${value.mkString(", ")}"}""").setStatus(Status.Ok)
           case Left(ex) =>
             Response.json(s"""{"failure": "${ex.message}"}""").setStatus(Status.BadRequest)
         }
