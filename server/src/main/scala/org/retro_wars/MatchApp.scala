@@ -50,12 +50,12 @@ object MatchApp extends ZIOAppDefault {
       result.map(res => {
         res match {
           case Right(value) =>
-            Response.text(s"success: $value").setStatus(Status.Ok)
+            Response.json(s"""{success: $value}""").setStatus(Status.Ok)
           case Left(ex) =>
-            Response.text(s"failure: ${ex.message}").setStatus(Status.BadRequest)
+            Response.json(s"""{failure: ${ex.message}}""").setStatus(Status.BadRequest)
         }
       })
-    case Method.POST -> !! / "leave" =>
+    case req@(Method.POST -> !! / "leave") =>
       ??? // TODO
   }
 
