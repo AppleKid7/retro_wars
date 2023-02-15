@@ -11,6 +11,9 @@ object MatchBehavior {
   enum MatchMakingError {
     case MatchFull(message: String, maxCapacity: Int)
     case InvalidUserId(message: String)
+    case InvalidJson(message: String)
+    case NetworkReadError(message: String)
+    case ShardcakeConnectionError(message: String)
     def message: String
   }
 

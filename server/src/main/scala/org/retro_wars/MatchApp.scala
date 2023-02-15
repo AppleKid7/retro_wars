@@ -39,54 +39,43 @@ object MatchApp extends ZIOAppDefault {
         )
     )
 
-  val app: Http[Scope & Sharding, Throwable, Request, Response] = Http.collectZIO[Request] {
+  val app: Http[Scope & Sharding, MatchMakingError, Request, Response] = Http.collectZIO[Request] {
     case Method.GET -> !! / "text" =>
       ZIO.unit.map(_ => Response.text("Hello World!"))
     case Method.POST -> !! / "join" =>
-      val result: ZIO[Sharding, Throwable, Either[MatchMakingError, Set[String]]] = for {
+      (for {
         matchShard <- Sharding.messenger(MatchBehavior.Match)
         res <- matchShard
           .send[Either[MatchMakingError, Set[String]]](s"match1")(Join(s"user-${randomUUID()}", _))
-      } yield res
-      result.map(res => {
-        res match {
-          case Right(value) =>
-            // Response(data = HttpData.fromString(s"success: $value")).setStatus(Status.Ok)
-            Response.json(s"""{"success": "${value.mkString(", ")}"}""").setStatus(Status.Ok)
-          case Left(ex) =>
-            Response.json(s"""{"failure": "${ex.message}"}""").setStatus(Status.BadRequest)
-        }
-      })
+          .orDie
+        value <- ZIO.fromEither(res)
+      } yield Response.json(s"""{"success": "${value.mkString(", ")}"}""").setStatus(Status.Ok))
     case req @ (Method.POST -> !! / "leave") =>
       for {
-        data <- req.bodyAsString.map(_.fromJson[UserLeave])
-        response <- data match {
-          case Left(e) =>
-            ZIO
-              .debug(s"Failed to parse the input: $e")
-              .as(Response.json(s"""{"failure": "$e"}""").setStatus(Status.BadRequest))
-          case Right(data) =>
-            val result = for {
-              matchShard <- Sharding.messenger(MatchBehavior.Match)
-              res <- matchShard.send[Either[MatchMakingError, String]](s"match1")(
-                Leave(s"user-${data.id}", _)
-              )
-            } yield res
-            result.map(res => {
-              res match {
-                case Right(value) =>
-                  Response.json(s"""{"success": "$value"}""").setStatus(Status.Ok)
-                case Left(ex) =>
-                  Response.json(s"""{"failure": "${ex.message}"}""").setStatus(Status.BadRequest)
-              }
-            })
-        }
-      } yield response
+        either <- req
+          .bodyAsString
+          .mapError(e => MatchMakingError.NetworkReadError(e.getMessage()))
+          .map(_.fromJson[UserLeave])
+        data <- ZIO.fromEither(either).mapError(e => MatchMakingError.InvalidJson(e))
+        matchShard <- Sharding.messenger(MatchBehavior.Match)
+        res <- matchShard
+          .send[Either[MatchMakingError, String]](s"match1")(
+            Leave(s"user-${data.id}", _)
+          )
+          .mapError(e => MatchMakingError.ShardcakeConnectionError(e.getMessage()))
+        value <- ZIO.fromEither(res)
+      } yield Response.json(s"""{"success": "$value"}""").setStatus(Status.Ok)
   }
 
   private val server =
     Server.paranoidLeakDetection ++ // Paranoid leak detection (affects performance)
-      Server.app(app) // Setup the Http app
+      Server.app(
+        app.catchAll(ex =>
+          Http.succeed(
+            Response.json(s"""{"failure": "${ex.message}"}""").setStatus(Status.BadRequest)
+          )
+        )
+      ) // Setup the Http app
 
   private val register = for {
     _ <- Sharding.registerEntity(
