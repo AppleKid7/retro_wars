@@ -49,7 +49,7 @@ object MatchApp extends ZIOAppDefault {
           .send[Either[MatchMakingError, Set[String]]](s"match1")(Join(s"user-${randomUUID()}", _))
           .orDie
         value <- ZIO.fromEither(res)
-      } yield Response.json(s"""{"success": "${value.mkString(", ")}"}""").setStatus(Status.Ok))
+      } yield Response.json(UserJoinResponse(value.toList).toJson).setStatus(Status.Ok))
     case req @ (Method.POST -> !! / "leave") =>
       for {
         either <- req
@@ -102,7 +102,6 @@ object MatchApp extends ZIOAppDefault {
             )).provide(
           config,
           ServerChannelFactory.auto,
-          // ChannelFactory.auto,
           EventLoopGroup.auto(nThreads),
           Scope.default,
           ZLayer.succeed(GrpcConfig.default),

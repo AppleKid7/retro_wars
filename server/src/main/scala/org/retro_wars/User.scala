@@ -21,3 +21,12 @@ object UserLeave {
   given JsonDecoder[UserLeave] =
     DeriveJsonDecoder.gen[UserLeave]
 }
+
+case class UserJoinResponse(success: List[String])
+object UserJoinResponse {
+  given JsonEncoder[UserJoinResponse] =
+    DeriveJsonEncoder.gen[UserJoinResponse]
+
+  given JsonDecoder[UserJoinResponse] =
+    DeriveJsonDecoder.gen[UserJoinResponse]
+}
