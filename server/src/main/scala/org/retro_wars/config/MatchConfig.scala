@@ -12,8 +12,7 @@ object MatchConfig {
     ZLayer {
       read {
         descriptor[MatchConfig].from(
-          TypesafeConfigSource.fromResourcePath
-            .at(PropertyTreePath.$("MatchConfig"))
+          TypesafeConfigSource.fromResourcePath.at(PropertyTreePath.$("MatchConfig"))
         )
       }
     }

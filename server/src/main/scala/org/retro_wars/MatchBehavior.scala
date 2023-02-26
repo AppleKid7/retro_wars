@@ -2,10 +2,10 @@ package org.retro_wars
 
 import com.devsisters.shardcake.{EntityType, Replier, Sharding}
 import dev.profunktor.redis4cats.RedisCommands
+import org.retro_wars.config.MatchConfig
+import scala.util.{Failure, Success, Try}
 import zio.{Dequeue, RIO, Task, ZIO}
 import zio.config._
-import scala.util.{Failure, Success, Try}
-import org.retro_wars.config.MatchConfig
 
 object MatchBehavior {
   enum MatchMakingError {

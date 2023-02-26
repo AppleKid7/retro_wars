@@ -7,25 +7,21 @@ import dev.profunktor.redis4cats.RedisCommands
 import io.getquill._
 import io.getquill.jdbczio.Quill
 import java.util.UUID.randomUUID
-import java.sql.SQLException
-import scala.util.{Try, Success, Failure}
+import org.retro_wars.MatchBehavior._
+import org.retro_wars.MatchBehavior.MatchMessage.*
+import org.retro_wars.config._
+import scala.util.{Failure, Success, Try}
 import zhttp.http._
+import zhttp.service
+import zhttp.service.{EventLoopGroup, Server}
+import zhttp.service.ChannelFactory
 import zhttp.service.Server
 import zhttp.service.server.ServerChannelFactory
-import zhttp.service.{EventLoopGroup, Server}
 import zio._
 import zio.config._
 import zio.json.*
-import zio.schema.Schema._
 import zio.schema._
-import zhttp.service.ChannelFactory
-import org.retro_wars.MatchBehavior._
-import org.retro_wars.MatchBehavior.MatchMessage.*
-import com.devsisters.shardcake._
-import com.devsisters.shardcake.interfaces._
-import dev.profunktor.redis4cats.RedisCommands
-import org.retro_wars.config._
-import zhttp.service
+import zio.schema.Schema._
 
 object MatchApp extends ZIOAppDefault {
   val config: ZLayer[Any, SecurityException, shardcake.Config] =

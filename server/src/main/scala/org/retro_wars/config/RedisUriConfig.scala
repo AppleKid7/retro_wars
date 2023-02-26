@@ -12,8 +12,7 @@ object RedisUriConfig {
     ZLayer {
       read {
         descriptor[RedisUriConfig].from(
-          TypesafeConfigSource.fromResourcePath
-            .at(PropertyTreePath.$("RedisUriConfig"))
+          TypesafeConfigSource.fromResourcePath.at(PropertyTreePath.$("RedisUriConfig"))
         )
       }
     }
