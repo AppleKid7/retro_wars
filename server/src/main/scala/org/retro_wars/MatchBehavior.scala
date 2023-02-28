@@ -5,16 +5,61 @@ import dev.profunktor.redis4cats.RedisCommands
 import org.retro_wars.config.MatchConfig
 import scala.util.{Failure, Success, Try}
 import zio.{Dequeue, RIO, Task, ZIO}
-import zio.config._
+import zio.config.*
+import sttp.tapir.Schema
+import zio.json.*
+import zio.json.{DeriveJsonCodec, JsonCodec}
 
 object MatchBehavior {
   enum MatchMakingError {
     case MatchFull(message: String, maxCapacity: Int)
+    // object MatchFull {
+    //   given zio.json.JsonEncoder[MatchFull] =
+    //     DeriveJsonEncoder.gen[MatchFull]
+
+    //   given zio.json.JsonDecoder[MatchFull] =
+    //     DeriveJsonDecoder.gen[MatchFull]
+    // }
     case InvalidUserId(message: String)
+    // object InvalidUserId {
+    //   given zio.json.JsonEncoder[InvalidUserId] =
+    //     DeriveJsonEncoder.gen[InvalidUserId]
+
+    //   given zio.json.JsonDecoder[InvalidUserId] =
+    //     DeriveJsonDecoder.gen[InvalidUserId]
+    // }
     case InvalidJson(message: String)
+    // object InvalidJson {
+    //   given zio.json.JsonEncoder[InvalidJson] =
+    //     DeriveJsonEncoder.gen[InvalidJson]
+
+    //   given zio.json.JsonDecoder[InvalidJson] =
+    //     DeriveJsonDecoder.gen[InvalidJson]
+    // }
     case NetworkReadError(message: String)
+    // object NetworkReadError {
+    //   given zio.json.JsonEncoder[NetworkReadError] =
+    //     DeriveJsonEncoder.gen[NetworkReadError]
+
+    //   given zio.json.JsonDecoder[NetworkReadError] =
+    //     DeriveJsonDecoder.gen[NetworkReadError]
+    // }
     case ShardcakeConnectionError(message: String)
+    // object ShardcakeConnectionError {
+    //   given zio.json.JsonEncoder[ShardcakeConnectionError] =
+    //     DeriveJsonEncoder.gen[ShardcakeConnectionError]
+
+    //   given zio.json.JsonDecoder[ShardcakeConnectionError] =
+    //     DeriveJsonDecoder.gen[ShardcakeConnectionError]
+    // }
     def message: String
+  }
+  object MatchMakingError {
+    given zio.json.JsonEncoder[MatchMakingError] =
+      DeriveJsonEncoder.gen[MatchMakingError]
+
+    given zio.json.JsonDecoder[MatchMakingError] =
+      DeriveJsonDecoder.gen[MatchMakingError]
   }
 
   enum MatchMessage {

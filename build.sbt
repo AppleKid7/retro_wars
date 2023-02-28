@@ -12,12 +12,15 @@ val circeVersion = "0.14.3"
 val monocleVersion = "3.1.0"
 val http4sVersion = "1.0.0-M36"
 val logbackVersion = "1.4.5"
-val zioVersion = "2.0.5"
-val zioHttpVersion = "0.0.3"
+val zioVersion = "2.0.6"
+val zioHttpVersion = "0.0.4"
+// val zioHttpVersion = "2.0.0-RC10"
 val shardCakeVersion = "2.0.5"
 val zioJsonVersion = "0.4.2"
 val quillVersion = "4.6.0"
-val zioConfigVersion = "3.0.6"
+val zioConfigVersion = "3.0.7"
+val tapirVersion = "1.2.6"
+val sttpVersion = "3.8.8"
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -74,7 +77,8 @@ lazy val server = (project in file("server"))
       "dev.zio" %% "zio-test-sbt" % zioVersion,
       "dev.zio" %% "zio-streams" % zioVersion,
       "dev.zio" %% "zio-test-junit" % zioVersion,
-      "dev.zio" %% "zio-http" % zioHttpVersion,
+      // "io.d11" %% "zhttp" % zioHttpVersion,
+      // "dev.zio" %% "zio-http" % zioHttpVersion,
       "dev.zio" %% "zio-json" % zioJsonVersion,
       "dev.zio" %% "zio-config" % zioConfigVersion,
       "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
@@ -85,10 +89,18 @@ lazy val server = (project in file("server"))
       "com.devsisters" %% "shardcake-manager" % shardCakeVersion,
       "com.devsisters" %% "shardcake-storage-redis" % shardCakeVersion,
       "com.devsisters" %% "shardcake-protocol-grpc" % shardCakeVersion,
-      "com.devsisters" %% "shardcake-serialization-kryo" % shardCakeVersion
+      "com.devsisters" %% "shardcake-serialization-kryo" % shardCakeVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-zio" % tapirVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-zio-http-server" % tapirVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-core" % tapirVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-swagger-ui-bundle" % tapirVersion,
+      "com.softwaremill.sttp.tapir" %% "tapir-json-zio" % tapirVersion,
     ),
     Universal / mappings ++= directory(
       baseDirectory.value / ".." / "game" / "target" / "indigoBuildFull"
-    )
+    ),
+    // ThisBuild / assemblyShadeRules := Seq(
+    //   ShadeRule.rename("com.softwaremill.sttp.tapir.**" -> "shadesttp.@1").inLibrary("com.softwaremill.sttp.client3" %% "async-http-client-backend-zio" % "3.8.7").inProject
+    // )
   )
   .dependsOn(core.jvm)
