@@ -17,6 +17,7 @@ val zioHttpVersion = "0.0.3"
 val shardCakeVersion = "2.0.5"
 val zioJsonVersion = "0.4.2"
 val quillVersion = "4.6.0"
+val zioConfigVersion = "3.0.6"
 
 lazy val core = crossProject(JSPlatform, JVMPlatform)
   .crossType(CrossType.Pure)
@@ -29,20 +30,6 @@ lazy val core = crossProject(JSPlatform, JVMPlatform)
       "io.circe" %% "circe-parser" % circeVersion,
       "dev.optics" %% "monocle-core" % monocleVersion,
       "dev.optics" %% "monocle-macro" % monocleVersion,
-      "dev.zio" %% "zio" % zioVersion,
-      "dev.zio" %% "zio-test" % zioVersion,
-      "dev.zio" %% "zio-test-sbt" % zioVersion,
-      "dev.zio" %% "zio-streams" % zioVersion,
-      "dev.zio" %% "zio-test-junit" % zioVersion,
-      "dev.zio" %% "zio-http" % zioHttpVersion,
-      "dev.zio" %% "zio-json" % zioJsonVersion,
-      "io.getquill" %% "quill-jdbc-zio" % quillVersion,
-      "org.postgresql" % "postgresql" % "42.3.1",
-      "com.devsisters" % "shardcake-core_3" % shardCakeVersion,
-      "com.devsisters" %% "shardcake-manager" % shardCakeVersion,
-      "com.devsisters" %% "shardcake-storage-redis" % shardCakeVersion,
-      "com.devsisters" %% "shardcake-protocol-grpc" % shardCakeVersion,
-      "com.devsisters" %% "shardcake-serialization-kryo" % shardCakeVersion
     )
   )
 
@@ -81,7 +68,24 @@ lazy val server = (project in file("server"))
       "org.http4s" %% "http4s-circe" % http4sVersion,
       "org.http4s" %% "http4s-dsl" % http4sVersion,
       "io.circe" %% "circe-generic" % circeVersion,
-      "ch.qos.logback" % "logback-classic" % logbackVersion % Runtime
+      "ch.qos.logback" % "logback-classic" % logbackVersion % Runtime,
+      "dev.zio" %% "zio" % zioVersion,
+      "dev.zio" %% "zio-test" % zioVersion,
+      "dev.zio" %% "zio-test-sbt" % zioVersion,
+      "dev.zio" %% "zio-streams" % zioVersion,
+      "dev.zio" %% "zio-test-junit" % zioVersion,
+      "dev.zio" %% "zio-http" % zioHttpVersion,
+      "dev.zio" %% "zio-json" % zioJsonVersion,
+      "dev.zio" %% "zio-config" % zioConfigVersion,
+      "dev.zio" %% "zio-config-typesafe" % zioConfigVersion,
+      "dev.zio" %% "zio-config-magnolia" % zioConfigVersion,
+      "io.getquill" %% "quill-jdbc-zio" % quillVersion,
+      "org.postgresql" % "postgresql" % "42.3.1",
+      "com.devsisters" % "shardcake-core_3" % shardCakeVersion,
+      "com.devsisters" %% "shardcake-manager" % shardCakeVersion,
+      "com.devsisters" %% "shardcake-storage-redis" % shardCakeVersion,
+      "com.devsisters" %% "shardcake-protocol-grpc" % shardCakeVersion,
+      "com.devsisters" %% "shardcake-serialization-kryo" % shardCakeVersion
     ),
     Universal / mappings ++= directory(
       baseDirectory.value / ".." / "game" / "target" / "indigoBuildFull"
